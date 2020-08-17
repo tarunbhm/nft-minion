@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
-import "@nomiclabs/buidler/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
+import "@openzeppelin/contracts/drafts/Counters.sol";
 
 import "./MinionOwnable.sol";
 
@@ -14,31 +14,49 @@ import "./MinionOwnable.sol";
  * See https://eips.ethereum.org/EIPS/eip-721
  */
 contract MinionNFT is ERC721Full, MinionOwnable {
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
 
     constructor(string memory name, string memory symbol, address minionAddress) public ERC721Full(name, symbol) MinionOwnable(minionAddress) {
     }
 
     /**
      * @dev Function to mint tokens.
+     * Minion can mint token to any address
+     * Others can mint token only to a member address
      * @param to The address that will receive the minted token.
-     * @param tokenId The token id to mint.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mint(address to, uint256 tokenId) public onlyMinionOrMember returns (bool) {
-        require(isMember(to), "MinionNFT: to address is not a member of moloch");
+    function mint(address to) public returns (bool) {
+        // If not called by minion then mint token to only DAO member address
+        if(!isMinion()){
+            require(isMember(to), "MinionNFT: Can't mint token to non member address");
+        }
+
+        _tokenIds.increment();
+        uint256 tokenId = _tokenIds.current();
+        
         _mint(to, tokenId);
         return true;
     }
 
     /**
      * @dev Function to mint tokens.
+     * Minion can mint token to any address
+     * Others can mint token only to a member address
      * @param to The address that will receive the minted tokens.
-     * @param tokenId The token id to mint.
      * @param tokenURI The token URI of the minted token.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mintWithTokenURI(address to, uint256 tokenId, string memory tokenURI) public onlyMinionOrMember returns (bool) {
-        require(isMember(to), "MinionNFT: to address is not a member of moloch");
+    function mintWithTokenURI(address to, string memory tokenURI) public returns (bool) {
+        // If not called by minion then mint token to only DAO member address
+        if(!isMinion()){
+            require(isMember(to), "MinionNFT: Can't mint token to non member address");
+        }
+        
+        _tokenIds.increment();
+        uint256 tokenId = _tokenIds.current();
+
         _mint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
         return true;
