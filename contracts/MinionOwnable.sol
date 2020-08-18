@@ -8,7 +8,9 @@ import "./interfaces/moloch/IMoloch.sol";
  * following
  * - `onlyMinion` -> Minion contract is given permission
  * - `onlyMember` -> Moloch members are given permission
+ * - `onlyMemberForAddr(address)` -> Allowed if given address is Moloch member
  * - `onlyMinionOrMember` -> Minion or Moloch members are given permission
+ * - `onlyMinionOrForMemberAddr(address)` -> Allowed to Minion or if given address is Moloch member
  */
 contract MinionOwnable {
     address private _minion;
@@ -40,26 +42,10 @@ contract MinionOwnable {
     }
 
     /**
-     * @dev Throws if called by any account other than the minion.
-     */
-    modifier onlyMinion() {
-        require(isMinion(), "MinionOwnable: caller is not the minion");
-        _;
-    }
-
-    /**
      * @dev Returns true if the caller is the current minion.
      */
     function isMinion() public view returns (bool) {
         return msg.sender == _minion;
-    }
-
-    /**
-     * @dev Throws if called by any account other than the moloch member.
-     */
-    modifier onlyMember() {
-        require(isMember(), "MinionOwnable: caller is not the moloch member");
-        _;
     }
 
     /**
@@ -79,18 +65,43 @@ contract MinionOwnable {
     }
 
     /**
-     * @dev Throws if called by any account other than the minion or moloch member.
+     * @dev Throws if called by any account other than the minion.
      */
-    modifier onlyMinionOrMember() {
-        require(isMinion(), "MinionOwnable: caller is not the moloch member");
+    modifier onlyMinion() {
+        require(isMinion(), "MinionOwnable: caller is not the minion");
         _;
     }
 
     /**
-     * @dev Returns true if the caller is the either current minion or moloch member.
+     * @dev Throws if called by any account other than the moloch member.
      */
-    function isMinionOrMember() public view returns (bool) {
-        return isMinion() || isMember();
+    modifier onlyMember() {
+        require(isMember(), "MinionOwnable: caller is not the moloch member");
+        _;
+    }
+
+    /**
+     * @dev Throws if provided address is not moloch member.
+     */
+    modifier onlyForMemberAddr(address memberAddress) {
+        require(isMember(memberAddress), "MinionOwnable: not called for moloch member");
+        _;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the minion or moloch member.
+     */
+    modifier onlyMinionOrMember() {
+        require((isMinion() || isMember()), "MinionOwnable: caller is not the minion or moloch member");
+        _;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the minion or given address is not moloch member.
+     */
+    modifier onlyMinionOrForMemberAddr(address memberAddress) {
+        require((isMinion() || isMember(memberAddress)), "MinionOwnable: caller is not the minion or not called for moloch member");
+        _;
     }
 
     /**

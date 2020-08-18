@@ -27,12 +27,7 @@ contract MinionNFT is ERC721Full, MinionOwnable {
      * @param to The address that will receive the minted token.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mint(address to) public returns (bool) {
-        // If not called by minion then mint token to only DAO member address
-        if(!isMinion()){
-            require(isMember(to), "MinionNFT: Can't mint token to non member address");
-        }
-
+    function mint(address to) public onlyMinionOrForMemberAddr(to) returns (bool) {
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
         
@@ -48,12 +43,7 @@ contract MinionNFT is ERC721Full, MinionOwnable {
      * @param tokenURI The token URI of the minted token.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mintWithTokenURI(address to, string memory tokenURI) public returns (bool) {
-        // If not called by minion then mint token to only DAO member address
-        if(!isMinion()){
-            require(isMember(to), "MinionNFT: Can't mint token to non member address");
-        }
-        
+    function mintWithTokenURI(address to, string memory tokenURI) public onlyMinionOrForMemberAddr(to) returns (bool) {
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
 
